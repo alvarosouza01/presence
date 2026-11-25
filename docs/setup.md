@@ -49,3 +49,11 @@ To split organic from ads, use UTMs on your ad links (Meta adds them automatical
 1. **Kit > Settings > Developer > API keys:** create a v4 key.
 2. Paste it into `KIT_API_KEY`.
 3. The newsletter shows up under Social. To show a landing page's list, set `kitList` to part of the form or tag name. If it does not match, the portal shows the available names at the top.
+
+## 7. RevenueCat (app subscriptions)
+
+1. **RevenueCat > Project settings > API keys > New secret key.** Pick version **V2** and give it read access to Charts & Metrics (`charts_metrics:overview:read`). For several projects, also give it read access to Projects.
+2. Paste it into `REVENUECAT_API_KEY`.
+3. Optional: set `REVENUECAT_PROJECT_ID` to show only one project. Without it, every project the key can see shows up on the Revenue page.
+
+Values come in `PORTAL_CURRENCY`. Revenue and new customers cover the last 28 days, as in the RevenueCat overview.

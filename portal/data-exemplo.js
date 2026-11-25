@@ -25,6 +25,7 @@
     periodo: "Yesterday",
 
     faturamento: {
+      apps: [{ nome: 'My iOS app', mrr: 1240, receita28d: 1385, assinaturas: 212, trials: 34, novos28d: 486, ativos28d: 3120 }],
       moeda: "USD",
       diario: escala(serie(30, 60, 70, 3), 1106.6), // last 30 days (sum = total by product)
       porProduto: [

@@ -10,7 +10,8 @@ const FONTES = [
   require('./sources/meta'),
   require('./sources/youtube'),
   require('./sources/instagram'),
-  require('./sources/kit')
+  require('./sources/kit'),
+  require('./sources/revenuecat')
 ];
 
 // Empty skeleton: the portal always gets every field, even with no source on.

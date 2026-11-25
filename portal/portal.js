@@ -394,6 +394,14 @@
     if (outras.length) html += '<p class="mono muted" style="margin:-2rem 0 3rem">Not in the total: ' + outras.map(function (m) {
       return new Intl.NumberFormat(LOCALE, { style: "currency", currency: m.toUpperCase() }).format(f.outrasMoedas[m]);
     }).join(" · ") + "</p>";
+    (f.apps || []).forEach(function (a) {
+      html += section("RC", "App subscriptions · " + esc(a.nome), "RevenueCat", '<div class="kpis k5">' +
+        kpi("MRR", a.mrr != null ? brl0.format(a.mrr) : "–", '<span class="delta flat">monthly recurring</span>') +
+        kpi("Revenue", a.receita28d != null ? brl0.format(a.receita28d) : "–", '<span class="delta flat">last 28 days</span>') +
+        kpi("Active subscriptions", a.assinaturas != null ? nf.format(a.assinaturas) : "–", "") +
+        kpi("Active trials", a.trials != null ? nf.format(a.trials) : "–", "") +
+        kpi("New customers", a.novos28d != null ? nf.format(a.novos28d) : "–", '<span class="delta flat">last 28 days</span>') + "</div>");
+    });
     var rows = f.recentes.map(function (r) {
       var cls = r.status === "paid" ? "ok" : (r.status === "failed" ? "bad" : "");
       var vf = r.moeda && r.moeda !== (D.faturamento.moeda || "").toLowerCase() ? new Intl.NumberFormat(LOCALE, { style: "currency", currency: r.moeda.toUpperCase() }).format(r.valor) : brl.format(r.valor);

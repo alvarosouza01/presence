@@ -15,7 +15,7 @@ Made by [alvarosouza.com](https://www.alvarosouza.com).
 - **Overview:** every site with yesterday's visits split into organic and ads, plus organic revenue, revenue from ads, ad spend and return on ad spend
 - **Site pages:** top pages, traffic sources, countries, organic vs ads per day, and the pages getting ad traffic grouped by campaign
 - **Landing pages:** visits, conversions, conversion rate, sales and whether an ad is running, plus who joined the list in Kit
-- **Revenue:** by day, week or month, compared with the previous 30 days, by product, with refunds, failed charges and the balance pending in Stripe
+- **Revenue:** by day, week or month, compared with the previous 30 days, by product, with refunds, failed charges and the balance pending in Stripe, plus app subscriptions from RevenueCat
 - **Campaigns:** Meta Ads spend, results, cost per result and creatives, with campaigns that stopped delivering flagged
 - **Social:** YouTube subscribers and latest videos, Instagram followers, reach and new followers per post, newsletter subscribers and open rates
 - **Private:** Google sign-in for the e-mails you allow, signed session cookie, read-only keys, hidden from search engines
@@ -31,6 +31,7 @@ Made by [alvarosouza.com](https://www.alvarosouza.com).
 | Instagram | followers, reach, posts | `INSTAGRAM_ACCESS_TOKEN` |
 | YouTube | subscribers, views, videos | `YOUTUBE_REFRESH_TOKEN` |
 | Kit | newsletter and landing page lists | `KIT_API_KEY` |
+| RevenueCat | app subscriptions: MRR, revenue, subscriptions, trials | `REVENUECAT_API_KEY` |
 
 With no source connected, the portal opens with example data so you can see how it looks.
 
