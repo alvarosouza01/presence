@@ -1,5 +1,5 @@
-// GET /api/portal/data  ·  tudo o que o portal mostra, só para quem está logado.
-// Sem nenhuma fonte configurada, devolve os dados de exemplo (com demo: true).
+// GET /api/portal/data  ·  everything the portal shows, signed-in users only.
+// With no source configured, returns the example data (demo: true).
 
 const { requireSession } = require('./_lib/session');
 const { build } = require('./_lib/build');

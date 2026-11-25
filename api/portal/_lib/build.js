@@ -1,7 +1,7 @@
-// Monta o JSON que o portal desenha, juntando as fontes que estão configuradas.
-// Fonte nova: crie _lib/sources/<nome>.js com o mesmo contrato e adicione em FONTES.
+// Builds the JSON the portal renders by merging every configured source.
+// New source: create _lib/sources/<name>.js with the same contract and add it to FONTES.
 
-const registry = require('./sites');
+const registry = require('./config')(require('./sites'));
 const { ultimosDias } = require('./util');
 
 const FONTES = [
@@ -13,17 +13,17 @@ const FONTES = [
   require('./sources/kit')
 ];
 
-// Esqueleto vazio: o portal sempre recebe todos os campos, mesmo sem fonte ligada.
+// Empty skeleton: the portal always gets every field, even with no source on.
 function vazio(hoje) {
   return {
     demo: false,
     atualizadoEm: hoje.toISOString(),
-    periodo: 'Ontem, ' + ultimosDias(hoje, 1)[0].split('-').reverse().slice(0, 2).join('/'),
+    periodo: 'Yesterday, ' + ultimosDias(hoje, 1)[0],
     fontes: {},
     erros: {},
     avisos: [],
     redes: { youtube: null, instagram: [], newsletter: null },
-    faturamento: { moeda: 'BRL', diario: [], porProduto: [], recentes: [], aCaminho: 0, falhas30d: 0, reembolsos30d: 0, gastoAds30d: null, outrasMoedas: {} },
+    faturamento: { moeda: String(process.env.PORTAL_CURRENCY || 'usd').toUpperCase(), diario: [], porProduto: [], recentes: [], aCaminho: 0, falhas30d: 0, reembolsos30d: 0, gastoAds30d: null, outrasMoedas: {} },
     sites: registry.sites.map((s) => ({
       slug: s.slug, nome: s.nome, dominio: s.dominio, papel: s.papel,
       ga: s.ga4 ? s.ga4.measurementId : null,

@@ -1,7 +1,7 @@
-// GET /api/portal/auth/youtube  ·  só para quem está logado no portal.
-// Pede ao Google acesso de LEITURA ao canal (YouTube e YouTube Analytics) com
-// access_type=offline, para receber um refresh token. Usado uma vez; o token
-// aparece em /api/portal/auth/youtube-callback para ser colado na Vercel.
+// GET /api/portal/auth/youtube  ·  signed-in users only.
+// Asks Google for READ access to the channel (YouTube and YouTube Analytics) with
+// access_type=offline to get a refresh token. Used once; the token
+// is shown at /api/portal/auth/youtube-callback to be pasted into your env.
 
 const crypto = require('crypto');
 const { requireSession, cookie, appendCookie, baseUrl } = require('../_lib/session');

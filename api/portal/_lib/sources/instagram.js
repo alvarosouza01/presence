@@ -1,8 +1,8 @@
-// Fonte: Instagram (contas profissionais ligadas ao Business Manager).
-// Variável: INSTAGRAM_ACCESS_TOKEN = token do usuário do sistema "portal-leitura" com
-// instagram_basic, instagram_manage_insights, pages_show_list e pages_read_engagement
-// (pode ser o mesmo valor do META_ACCESS_TOKEN, se ele tiver essas permissões).
-// As contas vêm de sites.js (redes.instagram).
+// Source: Instagram (professional accounts linked to your Business Manager).
+// Env: INSTAGRAM_ACCESS_TOKEN = system user token with
+// instagram_basic, instagram_manage_insights, pages_show_list and pages_read_engagement
+// (can be the same value as META_ACCESS_TOKEN if it has these permissions).
+// Accounts come from sites.js (social.instagram).
 
 const { ultimosDias } = require('../util');
 
@@ -29,20 +29,20 @@ async function coletarConta(conta, hoje) {
   const perfil = await get(conta.id, { fields: 'username,name,followers_count,follows_count,media_count,profile_picture_url' });
 
   const [novosDia, segueDeixa, ontemIns, midia] = await Promise.all([
-    // Novos seguidores por dia (a Meta só fornece para contas com 100+ seguidores).
+    // New followers per day (Meta only provides it for accounts with 100+ followers).
     talvez(get(conta.id + '/insights', { metric: 'follower_count', period: 'day', since: String(since), until: String(until) })),
-    // Seguiram e deixaram de seguir no período (total).
+    // Follows and unfollows in the period (total).
     talvez(get(conta.id + '/insights', { metric: 'follows_and_unfollows', period: 'day', metric_type: 'total_value', breakdown: 'follow_type', since: String(since), until: String(until) })),
-    // Alcance e visitas ao perfil de ontem.
+    // Yesterday's reach and profile visits.
     talvez(get(conta.id + '/insights', { metric: 'reach,profile_views', period: 'day', metric_type: 'total_value', since: String(unix(ontem)), until: String(unix(ontem) + 86400) })),
-    // Últimos posts.
+    // Latest posts.
     talvez(get(conta.id + '/media', { fields: 'id,caption,media_type,media_product_type,thumbnail_url,media_url,permalink,timestamp,like_count,comments_count', limit: '9' }))
   ]);
 
   const serieNovos = dias.map(() => 0);
   ((novosDia && novosDia.data && novosDia.data[0] && novosDia.data[0].values) || []).forEach((v) => {
     const d = String(v.end_time || '').slice(0, 10);
-    // end_time marca o fim do dia: o valor pertence ao dia anterior.
+    // end_time marks the end of the day: the value belongs to the day before.
     const dia = new Date(new Date(d + 'T00:00:00Z').getTime() - 864e5).toISOString().slice(0, 10);
     const i = dias.indexOf(dia);
     if (i >= 0) serieNovos[i] = num(v.value);
@@ -63,8 +63,8 @@ async function coletarConta(conta, hoje) {
     return m && m.total_value ? num(m.total_value.value) : null;
   };
 
-  // Por post: alcance e quantas pessoas começaram a seguir a partir dele (a Meta só
-  // fornece "follows" para posts do feed e reels; stories e posts antigos podem vir vazios).
+  // Per post: reach and how many people followed from it (Meta only
+  // returns "follows" for feed posts and reels; stories and old posts may be empty).
   const lista = (midia && midia.data) || [];
   const insPost = await Promise.all(lista.map((m) => talvez(get(m.id + '/insights', { metric: 'reach,follows' }))));
   const valorDe = (ins, nome) => {
@@ -74,7 +74,7 @@ async function coletarConta(conta, hoje) {
   const posts = lista.map((m, i) => ({
     alcance: valorDe(insPost[i], 'reach'),
     novosSeguidores: valorDe(insPost[i], 'follows'),
-    tipo: m.media_product_type === 'REELS' ? 'Reels' : (m.media_type === 'CAROUSEL_ALBUM' ? 'Carrossel' : (m.media_type === 'VIDEO' ? 'Vídeo' : 'Foto')),
+    tipo: m.media_product_type === 'REELS' ? 'Reels' : (m.media_type === 'CAROUSEL_ALBUM' ? 'Carousel' : (m.media_type === 'VIDEO' ? 'Video' : 'Photo')),
     legenda: String(m.caption || '').slice(0, 140),
     data: String(m.timestamp || '').slice(0, 10),
     curtidas: num(m.like_count), comentarios: num(m.comments_count),

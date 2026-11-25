@@ -1,4 +1,4 @@
-// GET /api/portal/me  ·  quem está logado (ou 401).
+// GET /api/portal/me  ·  who is signed in (or 401).
 
 const { requireSession } = require('./_lib/session');
 

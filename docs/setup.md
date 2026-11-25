@@ -1,51 +1,51 @@
-# Configuração, fonte por fonte
+# Setup, source by source
 
-Crie cada variável na Vercel em **Settings > Environment Variables**, marcada como **Secret**, em Production. Depois de criar ou mudar uma variável, faça um deploy novo (git push ou Redeploy): a Vercel só lê variáveis novas no deploy seguinte.
+Create each variable in Vercel under **Settings > Environment Variables**, marked as **Secret**, in Production. After adding or changing a variable, deploy again (git push or Redeploy): Vercel only reads new variables on the next deploy.
 
-## 1. Login com Google
+## 1. Google sign-in
 
-1. No [Google Cloud Console](https://console.cloud.google.com), crie um projeto.
-2. **Google Auth Platform > Branding:** nome do app, seu e-mail, home page, link de privacidade (`/privacidade`, já incluído) e o seu domínio em Authorised domains.
-3. **Audience:** External. Adicione seu e-mail como test user, ou publique o app (necessário para o YouTube não expirar a cada 7 dias).
-4. **Clients > Create client > Web application.** Em Authorised redirect URIs:
-   * `https://SEU-DOMINIO/api/portal/auth/callback`
-   * `https://SEU-DOMINIO/api/portal/auth/youtube-callback` (se for usar YouTube)
-   * as mesmas com `http://localhost:3000` para testar localmente
-5. Crie `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `PORTAL_ALLOWED_EMAIL` e `PORTAL_SESSION_SECRET` (gere com `openssl rand -hex 32`).
+1. In the [Google Cloud Console](https://console.cloud.google.com), create a project.
+2. **Google Auth Platform > Branding:** app name, your e-mail, home page, privacy policy link (`/privacy`, included) and your domain under Authorised domains.
+3. **Audience:** External. Add your e-mail as a test user, or publish the app (needed so the YouTube token does not expire every 7 days).
+4. **Clients > Create client > Web application.** Under Authorised redirect URIs add:
+   * `https://YOUR-DOMAIN/api/portal/auth/callback`
+   * `https://YOUR-DOMAIN/api/portal/auth/youtube-callback` (if you use YouTube)
+   * the same two with `http://localhost:3000` to test locally
+5. Create `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `PORTAL_ALLOWED_EMAIL` and `PORTAL_SESSION_SECRET` (generate it with `openssl rand -hex 32`).
 
 ## 2. Google Analytics 4
 
-1. No mesmo projeto do Cloud, ative a **Google Analytics Data API**.
-2. **IAM > Service accounts > Create.** Depois, em Keys, crie uma chave JSON.
-3. No Analytics, **Admin > Gerenciamento de acesso à conta**: adicione o e-mail da conta de serviço como **Leitor**.
-4. Cole o conteúdo inteiro do JSON em `GA4_SERVICE_ACCOUNT_JSON`.
-5. Em `sites.js`, coloque o `propertyId` (número) e o `measurementId` (G-…) de cada site.
+1. In the same Cloud project, enable the **Google Analytics Data API**.
+2. **IAM > Service accounts > Create.** Then under Keys, create a JSON key.
+3. In Analytics, **Admin > Account access management:** add the service account e-mail as a **Viewer**.
+4. Paste the whole JSON into `GA4_SERVICE_ACCOUNT_JSON`.
+5. In `sites.js`, set each site's `propertyId` (number) and `measurementId` (G-…).
 
-Para separar orgânico de anúncios, use UTMs nos links dos anúncios (a Meta já marca automaticamente).
+To split organic from ads, use UTMs on your ad links (Meta adds them automatically).
 
 ## 3. Stripe
 
-1. **Developers > API keys > Create restricted key.** Permissão de leitura em Charges, Checkout Sessions e Balance.
-2. Cole em `STRIPE_PORTAL_KEY`.
-3. Em `sites.js > produtos`, ligue cada produto aos Payment Links dele (`plink_…`). Marque `viaAnuncios: true` nos produtos vendidos com anúncio.
+1. **Developers > API keys > Create restricted key.** Read access to Charges, Checkout Sessions and Balance.
+2. Paste it into `STRIPE_PORTAL_KEY` and set `PORTAL_CURRENCY` (for example `usd`).
+3. In `sites.js > products`, link each product to its Payment Links (`plink_…`). Set `fromAds: true` on products you sell with ads.
 
-## 4. Meta Ads e Instagram
+## 4. Meta Ads and Instagram
 
-1. No [Meta for Developers](https://developers.facebook.com), crie um app do tipo Business com o caso de uso **Marketing API**. Para Instagram, adicione também **Instagram API** com as permissões `instagram_basic` e `instagram_manage_insights`.
-2. No Business Manager, **Configurações > Usuários do sistema > Adicionar.** Dê acesso à conta de anúncio (ver desempenho), à Página e ao app.
-3. **Gerar token:** escolha o app, validade "Nunca" e as permissões `ads_read`, `pages_show_list`, `pages_read_engagement`, `instagram_basic`, `instagram_manage_insights`.
-4. Cole o mesmo token em `META_ACCESS_TOKEN` e `INSTAGRAM_ACCESS_TOKEN`.
-5. Em `sites.js`, coloque o número da conta de anúncio e o ID da conta do Instagram.
+1. In [Meta for Developers](https://developers.facebook.com), create a Business app with the **Marketing API** use case. For Instagram, also add **Instagram API** with the `instagram_basic` and `instagram_manage_insights` permissions.
+2. In Business Manager, **Settings > System users > Add.** Give it access to the ad account (view performance), the Page and the app.
+3. **Generate token:** pick the app, expiry "Never" and the permissions `ads_read`, `pages_show_list`, `pages_read_engagement`, `instagram_basic`, `instagram_manage_insights`.
+4. Paste the same token into `META_ACCESS_TOKEN` and `INSTAGRAM_ACCESS_TOKEN`.
+5. In `sites.js`, add the ad account number and the Instagram account ID.
 
 ## 5. YouTube
 
-1. No Cloud, ative **YouTube Data API v3** e **YouTube Analytics API**.
-2. Confira o redirect `/api/portal/auth/youtube-callback` no client OAuth (passo 1.4).
-3. Com o portal no ar e logado, abra `/api/portal/auth/youtube` e escolha a conta **dona do canal**. Se ela tiver contas de marca, escolha a que tem o canal certo.
-4. Copie o token mostrado para `YOUTUBE_REFRESH_TOKEN`.
+1. In Cloud, enable **YouTube Data API v3** and **YouTube Analytics API**.
+2. Check that the `/api/portal/auth/youtube-callback` redirect is on the OAuth client (step 1.4).
+3. With the portal live and signed in, open `/api/portal/auth/youtube` and pick the account that **owns the channel**. If it has brand accounts, pick the one with the right channel.
+4. Copy the token shown into `YOUTUBE_REFRESH_TOKEN`.
 
-## 6. Kit (newsletter e listas)
+## 6. Kit (newsletter and lists)
 
-1. **Kit > Settings > Developer > API keys:** crie uma chave v4.
-2. Cole em `KIT_API_KEY`.
-3. A newsletter aparece em Redes. Para mostrar a lista de uma landing page, coloque em `kit:` um trecho do nome do formulário ou tag. Se o nome não bater, o portal mostra no topo os nomes disponíveis.
+1. **Kit > Settings > Developer > API keys:** create a v4 key.
+2. Paste it into `KIT_API_KEY`.
+3. The newsletter shows up under Social. To show a landing page's list, set `kitList` to part of the form or tag name. If it does not match, the portal shows the available names at the top.

@@ -1,10 +1,11 @@
-// Fonte: Stripe (faturamento).
-// Variável: STRIPE_PORTAL_KEY = chave RESTRITA, só leitura, com permissão de
-// leitura em Charges, Checkout Sessions e Balance. Não reutilize a STRIPE_SECRET_KEY.
+// Source: Stripe (revenue).
+// Env: STRIPE_PORTAL_KEY = RESTRICTED, read-only key with read access to
+// Charges, Checkout Sessions and Balance. PORTAL_CURRENCY sets the currency (default usd).
 
 const { diaLocal, ultimosDias } = require('../util');
 
 const API = 'https://api.stripe.com/v1/';
+const CUR = String(process.env.PORTAL_CURRENCY || 'usd').toLowerCase();
 
 async function get(path, params) {
   const url = API + path + (params ? '?' + new URLSearchParams(params).toString() : '');
@@ -13,7 +14,7 @@ async function get(path, params) {
   return r.json();
 }
 
-// Lê todas as páginas de uma listagem (limite de segurança: 10 páginas).
+// Reads every page of a list (safety limit: 10 pages).
 async function listAll(path, params) {
   let out = [], after = null;
   for (let i = 0; i < 10; i++) {
@@ -34,9 +35,9 @@ module.exports = {
 
   async collect(ctx) {
     const { registry, hoje } = ctx;
-    const dias180 = ultimosDias(hoje, 180);           // para as visões por semana e por mês
-    const dias = dias180.slice(-30);                   // últimos 30 dias
-    const ant30 = dias180.slice(-60, -30);             // 30 dias anteriores, para comparar
+    const dias180 = ultimosDias(hoje, 180);           // for the week and month views
+    const dias = dias180.slice(-30);                   // 30 days
+    const ant30 = dias180.slice(-60, -30);             // 30 days
     const desde = Math.floor(new Date(dias180[0] + 'T00:00:00Z').getTime() / 1000) - 3600 * 2;
 
     const [charges, sessions, balance] = await Promise.all([
@@ -45,7 +46,7 @@ module.exports = {
       get('balance')
     ]);
 
-    // payment_intent -> payment_link, a partir das sessões de checkout
+    // payment_intent -> payment_link, from checkout sessions
     const linkPorPI = {};
     sessions.forEach((s) => { if (s.payment_intent && s.payment_link) linkPorPI[s.payment_intent] = s.payment_link; });
 
@@ -75,9 +76,9 @@ module.exports = {
       if (i180 < 0) return;
       const idx = dias.indexOf(dia);
       const prod = produtoDe(c);
-      // Fora dos últimos 30 dias: só entra nas séries longas e na comparação.
+      // 30 days
       if (idx < 0) {
-        if (c.status === 'succeeded' && c.currency === 'brl') {
+        if (c.status === 'succeeded' && c.currency === CUR) {
           const liq = (c.amount - (c.amount_refunded || 0)) / 100;
           if (liq > 0) {
             diario180[i180] += liq;
@@ -88,19 +89,19 @@ module.exports = {
       }
       const valor = c.amount / 100;
       const reembolsado = (c.amount_refunded || 0) / 100;
-      let status = c.status === 'succeeded' ? (c.refunded ? 'reembolsado' : 'pago') : (c.status === 'failed' ? 'falhou' : c.status);
+      let status = c.status === 'succeeded' ? (c.refunded ? 'refunded' : 'paid') : (c.status === 'failed' ? 'failed' : c.status);
 
       if (recentes.length < 12) recentes.push({ data: dia, produto: prod.nome, valor, moeda: c.currency, status });
       if (c.status === 'failed') { falhas++; return; }
       if (c.status !== 'succeeded') return;
 
-      if (c.currency !== 'brl') {
+      if (c.currency !== CUR) {
         outrasMoedas[c.currency] = (outrasMoedas[c.currency] || 0) + valor - reembolsado;
         return;
       }
       const liquido = valor - reembolsado;
       reembolsos += reembolsado;
-      if (liquido <= 0) return; // reembolso total: não conta como venda
+      if (liquido <= 0) return; // full refund: not counted as a sale
       diario[idx] += liquido;
       diario180[i180] += liquido;
       if (prod.viaAnuncios) receitaAds += liquido;
@@ -110,10 +111,10 @@ module.exports = {
       if (prod.site) porSite[prod.site] = (porSite[prod.site] || 0) + liquido;
     });
 
-    // Saldo do Stripe: "pendente" é dinheiro de vendas já pagas que o Stripe ainda não liberou
-    // (aparece em Saldos como "A receber"). Não é previsão de assinatura.
-    const pend = (balance.pending || []).find((b) => b.currency === 'brl');
-    const disp = (balance.available || []).find((b) => b.currency === 'brl');
+    // Stripe balance: "pending" is money from paid sales that Stripe has not released yet
+    // (shown under Balances as incoming). It is not a subscription forecast.
+    const pend = (balance.pending || []).find((b) => b.currency === CUR);
+    const disp = (balance.available || []).find((b) => b.currency === CUR);
     const r2 = (v) => Math.round(v * 100) / 100;
     const total30 = diario.reduce((a, b) => a + b, 0);
     const sites = {};
@@ -121,7 +122,7 @@ module.exports = {
 
     return {
       faturamento: {
-        moeda: 'BRL',
+        moeda: CUR.toUpperCase(),
         diario: diario.map((v) => Math.round(v * 100) / 100),
         porProduto: Object.values(porProduto).sort((a, b) => b.valor - a.valor),
         recentes,

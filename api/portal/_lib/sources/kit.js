@@ -1,6 +1,6 @@
-// Fonte: Kit (antigo ConvertKit), listas de inscritos das landing pages.
-// Variável: KIT_API_KEY = chave da API v4 (Kit > Settings > Developer > API keys).
-// Cada landing em sites.js pode ter kit: 'trecho do nome do formulário ou tag no Kit'.
+// Source: Kit (formerly ConvertKit). Newsletter and landing page lists.
+// Env: KIT_API_KEY = v4 API key (Kit > Settings > Developer > API keys).
+// Each landing page in sites.js can set kitList: part of a Kit form or tag name.
 
 const API = 'https://api.kit.com/v4/';
 
@@ -13,7 +13,7 @@ async function get(path, params) {
   return j;
 }
 
-// Inscritos de um formulário ou tag, do mais novo para o mais antigo (até 1000).
+// Subscribers of a form or tag, newest first (up to 1000).
 async function inscritos(tipo, id) {
   let out = [], after = null, total = null;
   for (let i = 0; i < 10; i++) {
@@ -46,14 +46,14 @@ module.exports = {
       for (const l of site.landings || []) {
         if (!l.kit) continue;
         const alvo = alvos.find((a) => a.nome.toLowerCase().includes(l.kit.toLowerCase()));
-        if (!alvo) { avisos.push('Kit: nenhum formulário ou tag com "' + l.kit + '" no nome. Disponíveis: ' + alvos.map((a) => a.nome).join(', ').slice(0, 300)); continue; }
+        if (!alvo) { avisos.push('Kit: no form or tag with "' + l.kit + '" in its name. Available: ' + alvos.map((a) => a.nome).join(', ').slice(0, 300)); continue; }
         try {
           const { total, lista } = await inscritos(alvo.tipo, alvo.id);
           const quando = (s) => new Date(s.added_at || s.created_at).getTime();
           const dentro = (d) => lista.filter((s) => agora - quando(s) <= d * 864e5).length;
           sites[site.slug] = sites[site.slug] || { kit: {} };
           sites[site.slug].kit[l.nome] = {
-            origem: (alvo.tipo === 'forms' ? 'Formulário ' : 'Tag ') + alvo.nome,
+            origem: (alvo.tipo === 'forms' ? 'Form ' : 'Tag ') + alvo.nome,
             total, novos7d: dentro(7), novos30d: dentro(30),
             recentes: lista.slice(0, 15).map((s) => ({
               nome: s.first_name || '', email: s.email_address || '',
@@ -63,7 +63,7 @@ module.exports = {
         } catch (e) { avisos.push(e.message); }
       }
     }
-    // Newsletter (aba Redes): total de inscritos ativos, novos no período e últimos envios.
+    // Newsletter (Social tab): active subscribers, new in the period and latest sends.
     let newsletter = null;
     const cfg = registry.redes && registry.redes.newsletter;
     if (cfg) {
@@ -82,7 +82,7 @@ module.exports = {
           const lista = (b.broadcasts || []).filter((x) => x.published_at || x.send_at).slice(0, 5);
           envios = await Promise.all(lista.map(async (x) => {
             let st = {};
-            try { st = ((await get('broadcasts/' + x.id + '/stats')).broadcast || {}).stats || {}; } catch (e) { /* sem estatística */ }
+            try { st = ((await get('broadcasts/' + x.id + '/stats')).broadcast || {}).stats || {}; } catch (e) { /* no stats */ }
             return {
               assunto: x.subject || '(sem assunto)',
               data: String(x.published_at || x.send_at).slice(0, 10),
@@ -92,7 +92,7 @@ module.exports = {
               descadastros: st.unsubscribes != null ? st.unsubscribes : null
             };
           }));
-        } catch (e) { avisos.push('Kit: não consegui ler os envios (' + e.message + ')'); }
+        } catch (e) { avisos.push('Kit: could not read sends (' + e.message + ')'); }
         newsletter = { nome: cfg.nome || 'Newsletter', url: cfg.url || null, inscritos: total, novos30d: novos30, novosAnterior30d: novos60 - novos30, novos7d: novos7, envios };
       } catch (e) { avisos.push('Kit newsletter: ' + e.message); }
     }

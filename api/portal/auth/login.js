@@ -1,7 +1,7 @@
 // GET /api/portal/auth/login
-// Manda para a tela de login do Google. Guarda um "state" aleatório em cookie
-// para conferir no retorno (proteção contra CSRF).
-// Variáveis: GOOGLE_CLIENT_ID, PORTAL_ALLOWED_EMAIL.
+// Sends the user to Google's login. Stores a random "state" in a cookie
+// to check on the way back (CSRF protection).
+// Env: GOOGLE_CLIENT_ID, PORTAL_ALLOWED_EMAIL.
 
 const crypto = require('crypto');
 const { cookie, appendCookie, baseUrl, allowedEmails } = require('../_lib/session');
@@ -12,7 +12,7 @@ module.exports = (req, res) => {
 
   if (!process.env.GOOGLE_CLIENT_ID) {
     res.statusCode = 500;
-    return res.end('Login com Google ainda não configurado (GOOGLE_CLIENT_ID).');
+    return res.end('Google login is not configured yet (GOOGLE_CLIENT_ID).');
   }
 
   const state = crypto.randomBytes(24).toString('base64url');

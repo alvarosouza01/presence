@@ -1,4 +1,4 @@
-// GET /api/portal/auth/logout  ·  encerra a sessão e volta para a tela de login.
+// GET /api/portal/auth/logout  ·  ends the session and goes back to the login screen.
 
 const { endSession } = require('../_lib/session');
 

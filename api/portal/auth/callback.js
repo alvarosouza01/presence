@@ -1,7 +1,7 @@
 // GET /api/portal/auth/callback
-// Retorno do Google: confere o state, troca o código pelo id_token direto com o
-// Google (servidor a servidor, por HTTPS) e só abre a sessão se o email for o liberado.
-// Variáveis: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, PORTAL_ALLOWED_EMAIL, PORTAL_SESSION_SECRET.
+// Google callback: checks the state, exchanges the code for the id_token directly with
+// Google (server to server, over HTTPS) and only opens a session for an allowed email.
+// Env: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, PORTAL_ALLOWED_EMAIL, PORTAL_SESSION_SECRET.
 
 const { parseCookies, cookie, appendCookie, startSession, baseUrl, allowedEmails } = require('../_lib/session');
 
@@ -37,8 +37,8 @@ module.exports = async (req, res) => {
     if (!r.ok) return back(res, 'google');
     const t = await r.json();
 
-    // O id_token veio direto do endpoint de token do Google, então o conteúdo é confiável;
-    // ainda assim conferimos emissor, destinatário, validade e email verificado.
+    // The id_token came straight from Google's token endpoint, so it can be trusted;
+    // we still check issuer, audience, expiry and verified email.
     const payload = JSON.parse(Buffer.from(String(t.id_token).split('.')[1], 'base64url').toString('utf8'));
     const issOk = payload.iss === 'https://accounts.google.com' || payload.iss === 'accounts.google.com';
     const audOk = payload.aud === process.env.GOOGLE_CLIENT_ID;

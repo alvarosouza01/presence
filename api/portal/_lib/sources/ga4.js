@@ -1,7 +1,7 @@
-// Fonte: Google Analytics 4 (visitas, páginas, origens e conversões de cada site).
-// Variável: GA4_SERVICE_ACCOUNT_JSON = conteúdo inteiro do arquivo JSON da conta de
-// serviço (ex.: portal-ga4@seu-projeto.iam.gserviceaccount.com), que tem acesso de
-// "Leitor" na conta do Analytics. A propriedade de cada site vem de sites.js.
+// Source: Google Analytics 4 (visits, pages, sources and conversions per site).
+// Env: GA4_SERVICE_ACCOUNT_JSON = full content of the service account JSON key
+// (e.g. portal-ga4@your-project.iam.gserviceaccount.com), with Viewer access
+// on the Analytics account. Each site's property comes from sites.js.
 
 const crypto = require('crypto');
 const { ultimosDias } = require('../util');
@@ -12,14 +12,14 @@ const API = 'https://analyticsdata.googleapis.com/v1beta/properties/';
 
 function credenciais() {
   let raw = String(process.env.GA4_SERVICE_ACCOUNT_JSON || '').trim();
-  if (raw && raw[0] !== '{') raw = Buffer.from(raw, 'base64').toString('utf8'); // aceita JSON em base64 também
+  if (raw && raw[0] !== '{') raw = Buffer.from(raw, 'base64').toString('utf8'); // also accepts base64 JSON
   const c = JSON.parse(raw);
   if (!c.client_email || !c.private_key) throw new Error('GA4_SERVICE_ACCOUNT_JSON sem client_email/private_key');
   c.private_key = c.private_key.replace(/\\n/g, '\n');
   return c;
 }
 
-// Troca um JWT assinado com a chave da conta de serviço por um access token.
+// Exchanges a JWT signed with the service account key for an access token.
 async function accessToken(c) {
   const agora = Math.floor(Date.now() / 1000);
   const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
@@ -50,7 +50,7 @@ async function batch(token, propertyId, requests) {
   return (await r.json()).reports || [];
 }
 
-// Canais do GA4 que contam como tráfego pago (anúncios).
+// GA4 channel groups that count as paid traffic (ads).
 const CANAIS_PAGOS = ['Paid Social', 'Paid Search', 'Paid Video', 'Paid Shopping', 'Paid Other', 'Display', 'Cross-network', 'Audio'];
 const ehPago = (canal) => CANAIS_PAGOS.indexOf(canal) >= 0;
 
@@ -61,19 +61,19 @@ const met = (row, i) => Number(row.metricValues[i || 0].value) || 0;
 async function coletarSite(token, site, dias) {
   const ontem = { startDate: 'yesterday', endDate: 'yesterday' };
   const requests = [
-    { // 1. usuários ativos por dia, 14 dias
+    { // 1. active users per day, 14 days
       dateRanges: [{ startDate: '14daysAgo', endDate: 'yesterday' }],
       dimensions: [{ name: 'date' }],
       metrics: [{ name: 'activeUsers' }]
     },
-    { // 2. páginas mais vistas ontem
+    { // 2. top pages yesterday
       dateRanges: [ontem],
       dimensions: [{ name: 'pagePath' }],
       metrics: [{ name: 'screenPageViews' }],
       orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
       limit: 8
     },
-    { // 3. origem das sessões ontem
+    { // 3. session sources yesterday
       dateRanges: [ontem],
       dimensions: [{ name: 'sessionSourceMedium' }],
       metrics: [{ name: 'sessions' }],
@@ -82,7 +82,7 @@ async function coletarSite(token, site, dias) {
     }
   ];
   if (site.conversao && site.conversao.evento) {
-    requests.push({ // 4. evento de conversão, ontem e anteontem
+    requests.push({ // 4. conversion event, yesterday and the day before
       dateRanges: [{ startDate: '2daysAgo', endDate: 'yesterday' }],
       dimensions: [{ name: 'date' }],
       metrics: [{ name: 'eventCount' }],
@@ -90,15 +90,15 @@ async function coletarSite(token, site, dias) {
     });
   }
 
-  // Segundo lote: orgânico x anúncios e páginas que recebem tráfego pago.
+  // Second batch: organic vs ads and pages receiving paid traffic.
   const requests2 = [
-    { // 5. sessões por dia e canal, 14 dias
+    { // 5. sessions per day and channel, 14 days
       dateRanges: [{ startDate: '14daysAgo', endDate: 'yesterday' }],
       dimensions: [{ name: 'date' }, { name: 'sessionDefaultChannelGroup' }],
       metrics: [{ name: 'sessions' }],
       limit: 1000
     },
-    { // 6. páginas de entrada do tráfego pago, 7 dias
+    { // 6. landing pages of paid traffic, 7 days
       dateRanges: [{ startDate: '7daysAgo', endDate: 'yesterday' }],
       dimensions: [{ name: 'landingPage' }, { name: 'sessionCampaignName' }, { name: 'sessionSource' }],
       metrics: [{ name: 'sessions' }, { name: 'keyEvents' }],
@@ -106,7 +106,7 @@ async function coletarSite(token, site, dias) {
       orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
       limit: 15
     },
-    { // 7. países, 7 dias
+    { // 7. countries, 7 days
       dateRanges: [{ startDate: '7daysAgo', endDate: 'yesterday' }],
       dimensions: [{ name: 'country' }],
       metrics: [{ name: 'activeUsers' }],
@@ -116,7 +116,7 @@ async function coletarSite(token, site, dias) {
   ];
   const landings = site.landings || [];
   if (landings.length) {
-    requests2.push({ // 8. visitas e eventos das landing pages, 30 dias
+    requests2.push({ // 30 days
       dateRanges: [{ startDate: '30daysAgo', endDate: 'yesterday' }],
       dimensions: [{ name: 'pagePath' }, { name: 'eventName' }],
       metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }],
@@ -166,12 +166,12 @@ async function coletarSite(token, site, dias) {
         return { nome: l.nome, caminho: l.caminho, produto: l.produto || null, campanhas: l.campanhas || [], visitas30d: visitas, pessoas30d: pessoas, conversoes30d: conversoes, rotulo: l.rotulo };
       });
     }
-    // Junta linhas da mesma página e campanha. A Meta às vezes envia o nome da campanha
-    // com "+" no lugar de espaço (ou codificado), e o GA4 conta como campanha diferente.
-    const limpa = (t) => { let x = String(t || '').replace(/\+/g, ' '); try { x = decodeURIComponent(x); } catch (e) { /* mantém */ } return x.replace(/\s+/g, ' ').trim(); };
+    // Merges rows for the same page and campaign. Meta sometimes sends the campaign name
+    // with "+" instead of spaces (or encoded), and GA4 counts it as a different campaign.
+    const limpa = (t) => { let x = String(t || '').replace(/\+/g, ' '); try { x = decodeURIComponent(x); } catch (e) { /* keep as is */ } return x.replace(/\s+/g, ' ').trim(); };
     const juntas = {};
     linhas(reps2[1]).forEach((r) => {
-      const pagina = dim(r, 0) || '(sem página)';
+      const pagina = dim(r, 0) || '(no page)';
       const camp = dim(r, 1) && dim(r, 1) !== '(not set)' ? limpa(dim(r, 1)) : null;
       const k = pagina + '|' + (camp || '').toLowerCase();
       const o = juntas[k] = juntas[k] || { pagina, campanha: camp, origens: [], sessoes: 0, conversoes: 0 };

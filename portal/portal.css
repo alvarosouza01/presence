@@ -1,8 +1,7 @@
 /* ============================================================
-   Portal · minha presença online
-   Mesmo vocabulário do portfólio: Switzer, Instrument Serif
-   itálico para os números, Fragment Mono para metadados,
-   hairlines e um único vermelho suíço.
+   Presence · your online presence dashboard
+   Switzer for text, Instrument Serif for numbers,
+   Fragment Mono for metadata, hairlines and one Swiss red.
    ============================================================ */
 
 :root {
@@ -27,7 +26,7 @@
   --ig: #d6297f;
   --li: #0a66c2;
 
-  /* Uma cor por site, na ordem de sites.js */
+  /* One color per site, in sites.js order */
   --s0: var(--red);
   --s1: var(--violet);
   --s2: var(--blue);
@@ -274,7 +273,7 @@ a { color: inherit; text-decoration: none; }
   .hide-sm { display: none; }
 }
 
-/* ---------- Login e estados ---------- */
+/* ---------- Login and states ---------- */
 
 body.is-login .side { display: none; }
 body.is-login .shell { grid-template-columns: minmax(0, 1fr); }
@@ -308,7 +307,7 @@ a.rede:hover { border-color: var(--fg); transform: translateY(-2px); }
 .vid img, .vid-ph { width: 5.5rem; aspect-ratio: 16 / 9; object-fit: cover; flex: none; background: var(--paper); border-radius: 2px; }
 @media (max-width: 900px) { .redes { grid-template-columns: 1fr; } }
 
-/* ---------- Orgânico x anúncios ---------- */
+/* ---------- Organic vs ads ---------- */
 
 .drop-btn { margin-left: 0.5rem; padding: 0.25rem 0.55rem; border: 1px solid var(--hairline); border-radius: 999px; background: transparent; font: inherit; font-size: 0.75rem; color: var(--fg); cursor: pointer; white-space: nowrap; transition: border-color .2s, background .2s; }
 .drop-btn:hover { border-color: var(--fg); }
@@ -335,30 +334,30 @@ tr.drop > td { padding: 0; background: var(--paper); }
 
 
 /* ============================================================
-   Cor: verde para subir, vermelho para cair, uma cor por site
-   e as cores de cada rede.
+   Color: green for up, red for down, one color per site
+   and each network's brand color.
    ============================================================ */
 
-/* Variações viram etiquetas coloridas */
+/* Changes become colored chips */
 .delta.up, .delta.down { display: inline-block; padding: 0.12rem 0.45rem; border-radius: 999px; font-weight: 500; }
 .delta.up { background: var(--green-soft); }
 .delta.down { background: var(--red-soft); }
 
-/* KPIs: um ponto colorido diferente em cada um */
+/* KPIs: a different colored dot on each */
 .kpi .mono::before { content: ""; display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 2px; margin-right: 0.45rem; vertical-align: 0; background: var(--k, var(--fg)); }
 .kpi:nth-child(4n+1) { --k: var(--blue); }
 .kpi:nth-child(4n+2) { --k: var(--green); }
 .kpi:nth-child(4n+3) { --k: var(--amber); }
 .kpi:nth-child(4n+4) { --k: var(--violet); }
 
-/* Sparklines na cor da tendência */
+/* Sparklines in the trend color */
 .spark.up path.line { stroke: var(--green); stroke-width: 1.5; }
 .spark.up path.area { fill: rgba(26, 154, 85, 0.1); }
 .spark.up circle { fill: var(--green); }
 .spark.down path.line { stroke: var(--red); stroke-width: 1.5; }
 .spark.down path.area { fill: rgba(232, 69, 44, 0.08); }
 
-/* Barras por tema */
+/* Bar themes */
 .bars.tom-green rect { fill: var(--green); opacity: .75; }
 .bars.tom-green rect.last, .bars.tom-green rect:hover { fill: var(--green); opacity: 1; }
 .bars.tom-amber rect { fill: var(--amber); opacity: .7; }
@@ -368,7 +367,7 @@ tr.drop > td { padding: 0; background: var(--paper); }
 .bars.tom-ig rect { fill: var(--ig); opacity: .7; }
 .bars.tom-ig rect.last, .bars.tom-ig rect:hover { fill: var(--ig); opacity: 1; }
 
-/* Listas de barras com uma cor por linha */
+/* Bar lists with one color per row */
 .bar-row.c0 .fill { background: var(--blue); }
 .bar-row.c1 .fill { background: var(--violet); }
 .bar-row.c2 .fill { background: var(--green); }
@@ -376,28 +375,28 @@ tr.drop > td { padding: 0; background: var(--paper); }
 .bar-row.c4 .fill { background: var(--red); }
 .bar-row .track { height: 4px; border-radius: 2px; overflow: hidden; }
 
-/* Pills preenchidas */
+/* Filled pills */
 .pill.live { background: var(--red-soft); border-color: transparent; }
 .pill.ok { background: var(--green-soft); border-color: transparent; }
 .pill.bad { background: var(--red-soft); border-color: transparent; }
 
-/* Cor de cada site */
+/* Site colors */
 .sw { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 3px; background: var(--c); margin-right: 0.55rem; vertical-align: 0.02em; }
 .site-name small { padding-left: 1.15rem; }
 .table tr.link:hover td:first-child { box-shadow: inset 3px 0 0 var(--red); }
 
-/* Orgânico verde, anúncios vermelho */
+/* Organic green, ads red */
 .stk i.o, .stack-leg i.o { background: var(--green); }
 .stk i.a, .stack-leg i.a { background: var(--red); }
 
-/* Cartões de rede com a cor da marca */
+/* Network cards in brand colors */
 .rede { border-top: 3px solid var(--rc, var(--hairline)); background: linear-gradient(180deg, var(--rs, transparent), transparent 70%); }
 .rede.r-yt { --rc: var(--yt); --rs: rgba(255, 31, 61, 0.05); }
 .rede.r-ig { --rc: var(--ig); --rs: rgba(214, 41, 127, 0.05); }
 .rede.r-li { --rc: var(--li); --rs: rgba(10, 102, 194, 0.04); }
 .rede .rede-top .mono { color: var(--rc, var(--muted)); font-weight: 500; }
 
-/* ---------- Abas da página Redes ---------- */
+/* ---------- Social page tabs ---------- */
 
 .rtabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; margin: 0 0 2.4rem; }
 .rtab { --rc: var(--fg); position: relative; display: grid; gap: 0.25rem; padding: 1rem 1.1rem 1.05rem; border: 1px solid var(--hairline); border-radius: 6px; background: #fff;
@@ -416,14 +415,14 @@ tr.drop > td { padding: 0; background: var(--paper); }
 @media (max-width: 700px) { .rtabs { grid-template-columns: 1fr; } }
 
 /* ============================================================
-   Rodada 25/11: cards de site, receita por período, landings
+   Site cards, revenue by period, landing pages
    ============================================================ */
 
 .kpis.k5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .kpis.k5 .kpi .num { font-size: clamp(1.9rem, 2.6vw, 2.6rem); }
 .kpi:nth-child(5n+5) { --k: var(--red); }
 
-/* Cards de site, no padrão de painéis de analytics: gráfico em cima, métricas 2x2 embaixo */
+/* Site cards: chart on top, 2x2 metrics below */
 .scards { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1rem; }
 .scard { border: 1px solid var(--hairline); border-radius: 8px; padding: 1.1rem 1.15rem 1rem; background: #fff; cursor: pointer;
   display: flex; flex-direction: column; gap: 0.9rem; transition: border-color .25s, transform .35s var(--ease), box-shadow .35s var(--ease); border-top: 3px solid var(--c); }
@@ -451,11 +450,11 @@ tr.drop > td { padding: 0; background: var(--paper); }
 .sdrop[open] summary::after { content: " ▴"; }
 .sdrop .table { margin-top: 0.6rem; font-size: 0.78rem; }
 
-/* Caixa para separar gráficos que ficam lado a lado */
+/* Box that separates side-by-side charts */
 .boxed { background: var(--paper); border-radius: 8px; padding: 0.4rem 1.1rem 0.8rem; }
 .boxed .bar-row .track { background: #fff; }
 
-/* Seletor dia, semana, mês */
+/* Day, week, month switch */
 .seg-wrap { display: grid; gap: 0.9rem; }
 .seg { display: inline-flex; justify-self: start; background: var(--paper); border-radius: 999px; padding: 3px; }
 .seg button { border: 0; background: transparent; font: inherit; font-size: 0.78rem; padding: 0.35rem 0.85rem; border-radius: 999px; cursor: pointer; color: var(--muted); }
@@ -467,7 +466,7 @@ tr.drop > td { padding: 0; background: var(--paper); }
 .lcard.novo { border-style: dashed; justify-content: center; color: var(--muted); }
 .lcard.novo p { font-size: 0.85rem; }
 
-/* Imagens de criativos e posts */
+/* Creative and post images */
 .creative .thumb { position: relative; overflow: hidden; }
 .creative .thumb img.cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
 .creative .thumb .fmt, .creative .thumb .headline { position: relative; z-index: 1; }
@@ -484,7 +483,7 @@ tr.drop > td { padding: 0; background: var(--paper); }
 .kitnums { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
 .kitnums strong { font-family: var(--serif); font-weight: 400; font-size: 1.6rem; }
 
-/* Lista compacta de páginas com anúncio, dentro dos cards */
+/* Compact list of pages with ad traffic, inside cards */
 .plist { list-style: none; margin: 0.5rem 0 0; padding: 0; }
 .plist li { display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; padding: 0.55rem 0; border-bottom: 1px solid var(--hairline); }
 .plist li:last-child { border-bottom: 0; }
@@ -499,3 +498,6 @@ tr.drop > td { padding: 0; background: var(--paper); }
 .rtab.t-newsletter { --rc: var(--violet); --rs: rgba(122, 91, 214, 0.07); }
 .rtabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .redes { grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+
+.plist .who { font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lcard, .scard { min-width: 0; overflow: hidden; }

@@ -1,51 +1,79 @@
-# Minha presença online
+# Presence
 
-Um portal privado que junta, numa tela só, tudo o que acontece na sua vida online: visitas dos seus sites, vendas, anúncios, redes sociais e newsletter.
+![Presence dashboard showing site cards, organic vs ad traffic and return on ad spend](docs/cover.webp)
 
-*A private dashboard for your whole online presence: sites, sales, ads, social and newsletter. Static front end plus serverless functions on Vercel, no dependencies, no database.*
+A free, open-source private dashboard for your whole online presence. Your sites, sales, ads, social accounts and newsletter on one screen, updated every time you open it.
 
+No database, no dependencies, no build step. It runs on Vercel's free plan.
 
-## O que ele mostra
+Made by [alvarosouza.com](https://www.alvarosouza.com).
 
-* **Visão geral:** visitas de ontem de cada site (orgânico x anúncios), receita orgânica, receita via anúncios, gasto e retorno dos anúncios.
-* **Cada site:** páginas mais vistas, origem das visitas, países, landing pages com conversão e campanhas com criativos.
-* **Faturamento:** receita por dia, semana ou mês, comparação com os 30 dias anteriores, vendas por produto e saldo a liberar no Stripe.
-* **Redes:** YouTube (inscritos, vídeos), Instagram (seguidores, posts, seguidores por post) e newsletter do Kit (inscritos, aberturas).
+![A walkthrough of the overview, a site page, revenue and social tabs](docs/demo.gif)
 
-Cada fonte é opcional: o portal liga só o que tiver chave configurada. Sem nenhuma, ele abre com dados de exemplo para você ver o visual.
+## Features
 
-| Fonte | O que traz | Variável |
+- **Overview:** every site with yesterday's visits split into organic and ads, plus organic revenue, revenue from ads, ad spend and return on ad spend
+- **Site pages:** top pages, traffic sources, countries, organic vs ads per day, and the pages getting ad traffic grouped by campaign
+- **Landing pages:** visits, conversions, conversion rate, sales and whether an ad is running, plus who joined the list in Kit
+- **Revenue:** by day, week or month, compared with the previous 30 days, by product, with refunds, failed charges and the balance pending in Stripe
+- **Campaigns:** Meta Ads spend, results, cost per result and creatives, with campaigns that stopped delivering flagged
+- **Social:** YouTube subscribers and latest videos, Instagram followers, reach and new followers per post, newsletter subscribers and open rates
+- **Private:** Google sign-in for the e-mails you allow, signed session cookie, read-only keys, hidden from search engines
+- **Pluggable:** every source is optional and independent, and adding a new one is a single file
+
+## Sources
+
+| Source | What it brings | Variable |
 |---|---|---|
-| Google Analytics 4 | visitas, páginas, origens, países, conversões | `GA4_SERVICE_ACCOUNT_JSON` |
-| Stripe | vendas, produtos, reembolsos, saldo | `STRIPE_PORTAL_KEY` |
-| Meta Ads | campanhas, gasto, resultados, criativos | `META_ACCESS_TOKEN` |
-| Instagram | seguidores, alcance, posts | `INSTAGRAM_ACCESS_TOKEN` |
-| YouTube | inscritos, views, vídeos | `YOUTUBE_REFRESH_TOKEN` |
-| Kit | newsletter e listas das landing pages | `KIT_API_KEY` |
+| Google Analytics 4 | visits, pages, sources, countries, conversions | `GA4_SERVICE_ACCOUNT_JSON` |
+| Stripe | sales, products, refunds, pending balance | `STRIPE_PORTAL_KEY` |
+| Meta Ads | campaigns, spend, results, creatives | `META_ACCESS_TOKEN` |
+| Instagram | followers, reach, posts | `INSTAGRAM_ACCESS_TOKEN` |
+| YouTube | subscribers, views, videos | `YOUTUBE_REFRESH_TOKEN` |
+| Kit | newsletter and landing page lists | `KIT_API_KEY` |
 
-## Começar em 10 minutos
+With no source connected, the portal opens with example data so you can see how it looks.
 
-1. **Use este repositório como template** (botão "Use this template" no GitHub) ou faça um fork.
-2. **Importe na Vercel:** New Project, escolha o repositório. Não precisa de build.
-3. **Configure o login com Google** (passo a passo em [docs/setup.md](docs/setup.md#1-login-com-google)) e crie as 4 variáveis de login.
-4. **Edite `api/portal/_lib/sites.js`** com seus sites, produtos e redes. É o único arquivo de configuração.
-5. **Ligue as fontes que quiser**, uma de cada vez, seguindo [docs/setup.md](docs/setup.md).
-6. Abra `seudominio.com/portal`.
+## Use it
 
-Para ver localmente: `npx vercel dev` e abra `http://localhost:3000/portal/`. Sem fontes configuradas, aparecem os dados de exemplo.
+1. Click **Use this template** at the top of this repository to create your own copy.
+2. Import it in [Vercel](https://vercel.com/new). There is nothing to build.
+3. Set up Google sign-in and add the four login variables from [`.env.example`](.env.example). Step by step: [docs/setup.md](docs/setup.md#1-google-sign-in).
+4. Open `https://your-domain/portal`.
 
-## Segurança
+**Locally:** run `npx vercel dev` in the folder and open `http://localhost:3000/portal/`.
 
-* Só os e-mails em `PORTAL_ALLOWED_EMAIL` entram. A sessão fica num cookie assinado, HttpOnly.
-* Todas as chaves pedidas são **só de leitura**. Nenhuma fica no código: vão nas variáveis da Vercel.
-* O portal não aparece no Google (`noindex` e `robots.txt`).
-* Nunca faça commit de `.env`. O `.gitignore` já ignora.
+## Make it yours
 
-## Plugar algo novo
+1. Edit `api/portal/_lib/sites.js` with your sites, products, landing pages and social accounts. It is the only config file.
+2. Connect the sources you want, one at a time, following [docs/setup.md](docs/setup.md). Each one turns on as soon as its variable exists.
+3. Set `PORTAL_CURRENCY` and `PORTAL_TZ` for your currency and time zone.
+4. Edit `portal/portal.css` to restyle the dashboard, and `privacy.html` with your name and contact.
 
-* **Site, produto ou landing page:** edite `sites.js`.
-* **Fonte nova** (Search Console, App Store, TikTok…): crie `api/portal/_lib/sources/<nome>.js` com o contrato descrito em [docs/arquitetura.md](docs/arquitetura.md) e adicione em `build.js`.
+After changing an environment variable in Vercel, deploy again: Vercel only reads new variables on the next deploy.
 
-## Licença
+## Project structure
 
-MIT. Feito por [Álvaro Souza](https://www.alvarosouza.com).
+```
+portal/                  Dashboard (plain HTML, CSS and JavaScript)
+  portal.js              Screens: overview, revenue, social, site
+  portal.css             Styles
+  data-exemplo.js        Example data shown when nothing is connected
+api/portal/              Vercel serverless functions
+  data.js                Builds the dashboard data (sign-in required)
+  auth/                  Google sign-in and YouTube authorization
+  _lib/sites.js          Your config
+  _lib/sources/          One file per source
+privacy.html             Privacy policy template
+docs/                    Setup guide and architecture
+```
+
+Adding a source, like Search Console or the App Store: see [docs/architecture.md](docs/architecture.md).
+
+## Privacy
+
+Everything runs in your own Vercel project. Your data goes straight from each service to your portal and is never stored or sent anywhere else. All keys are read-only and live in your environment variables, never in the code.
+
+## License
+
+MIT. See [LICENSE](LICENSE). You can use, copy, modify and sell it freely.

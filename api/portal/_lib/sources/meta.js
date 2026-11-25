@@ -1,7 +1,7 @@
-// Fonte: Meta Ads (campanhas, métricas, criativos e gasto).
-// Variável: META_ACCESS_TOKEN = token de longa duração de um usuário do sistema do
-// seu Business Manager, só com permissão ads_read nas contas
-// listadas em sites.js (meta.contas). Opcional: META_API_VERSION (padrão abaixo).
+// Source: Meta Ads (campaigns, metrics, creatives and spend).
+// Env: META_ACCESS_TOKEN = long-lived system user token from
+// your Business Manager, with ads_read only on the accounts
+// listed in sites.js (meta.adAccounts). Optional: META_API_VERSION (default below).
 
 const { ultimosDias } = require('../util');
 
@@ -20,7 +20,7 @@ async function pegar(url) {
   return j;
 }
 
-// Lê todas as páginas de uma listagem (limite de segurança: 5 páginas).
+// Reads every page of a list (safety limit: 5 pages).
 async function todas(path, params) {
   let j = await get(path, params);
   let out = j.data || [];
@@ -32,15 +32,15 @@ async function todas(path, params) {
   return out.filter((x) => !x.id || (!vistos.has(x.id) && vistos.add(x.id)));
 }
 
-// Qual ação conta como "resultado" para cada objetivo de campanha.
+// Which action counts as a "result" for each campaign objective.
 const RESULTADO = {
-  OUTCOME_SALES: { tipos: ['offsite_conversion.fb_pixel_purchase', 'purchase', 'omni_purchase'], rotulo: 'compras' },
+  OUTCOME_SALES: { tipos: ['offsite_conversion.fb_pixel_purchase', 'purchase', 'omni_purchase'], rotulo: 'purchases' },
   OUTCOME_LEADS: { tipos: ['offsite_conversion.fb_pixel_lead', 'lead', 'onsite_conversion.lead_grouped', 'offsite_conversion.fb_pixel_complete_registration'], rotulo: 'leads' },
-  OUTCOME_TRAFFIC: { tipos: ['landing_page_view', 'link_click'], rotulo: 'visitas na página' },
-  OUTCOME_ENGAGEMENT: { tipos: ['post_engagement'], rotulo: 'engajamentos' },
-  OUTCOME_AWARENESS: { tipos: ['reach'], rotulo: 'alcance' }
+  OUTCOME_TRAFFIC: { tipos: ['landing_page_view', 'link_click'], rotulo: 'landing page views' },
+  OUTCOME_ENGAGEMENT: { tipos: ['post_engagement'], rotulo: 'engagements' },
+  OUTCOME_AWARENESS: { tipos: ['reach'], rotulo: 'reach' }
 };
-function resultadoDe(objetivo) { return RESULTADO[objetivo] || { tipos: ['link_click'], rotulo: 'cliques' }; }
+function resultadoDe(objetivo) { return RESULTADO[objetivo] || { tipos: ['link_click'], rotulo: 'clicks' }; }
 function contarAcoes(actions, tipos) {
   const a = actions || [];
   for (const t of tipos) {
@@ -51,8 +51,8 @@ function contarAcoes(actions, tipos) {
 }
 
 const OBJETIVO_PT = {
-  OUTCOME_SALES: 'Vendas', OUTCOME_LEADS: 'Leads', OUTCOME_TRAFFIC: 'Tráfego',
-  OUTCOME_ENGAGEMENT: 'Engajamento', OUTCOME_AWARENESS: 'Reconhecimento', OUTCOME_APP_PROMOTION: 'App'
+  OUTCOME_SALES: 'Sales', OUTCOME_LEADS: 'Leads', OUTCOME_TRAFFIC: 'Traffic',
+  OUTCOME_ENGAGEMENT: 'Engagement', OUTCOME_AWARENESS: 'Awareness', OUTCOME_APP_PROMOTION: 'App'
 };
 
 const num = (v) => Number(v) || 0;
@@ -75,7 +75,7 @@ async function coletarConta(conta, dias) {
       time_increment: '1', limit: '500', fields: 'campaign_id,spend'
     }),
     todas('act_' + conta + '/ads', {
-      // thumbnail pedido em 600px: o padrão da Meta é 64px e fica borrado.
+      // thumbnail requested at 600px: Meta's default is 64px and looks blurry.
       fields: 'id,name,campaign_id,effective_status,creative.thumbnail_width(600).thumbnail_height(600){title,body,thumbnail_url,image_url,object_type}',
       effective_status: JSON.stringify(['ACTIVE', 'PAUSED', 'IN_PROCESS', 'WITH_ISSUES']),
       limit: '200'
@@ -107,14 +107,14 @@ async function coletarConta(conta, dias) {
     let status = 'pausada';
     if (c.effective_status === 'ACTIVE') status = (ultimos2 === 0 && diasNoAr > 2) ? 'sem_entrega' : 'ativa';
     else if (c.effective_status === 'WITH_ISSUES') status = 'sem_entrega';
-    else if (c.effective_status === 'IN_PROCESS') status = 'em revisão';
+    else if (c.effective_status === 'IN_PROCESS') status = 'in review';
 
     const criativos = ads.filter((a) => a.campaign_id === c.id).map((a) => {
       const im = iAd[a.id] || {};
       const cr = a.creative || {};
       return {
         nome: a.name,
-        formato: cr.object_type === 'VIDEO' ? 'Vídeo' : (cr.object_type ? 'Imagem' : 'Anúncio'),
+        formato: cr.object_type === 'VIDEO' ? 'Video' : (cr.object_type ? 'Image' : 'Ad'),
         titulo: cr.title || a.name,
         texto: cr.body || '',
         imagem: cr.image_url || cr.thumbnail_url || null,
@@ -135,8 +135,8 @@ async function coletarConta(conta, dias) {
       resultados, rotuloResultado: res.rotulo,
       serieGasto: gs,
       criativos,
-      // Só entra o que gastou nos últimos 30 dias, ou o que está ativo e foi criado há pouco
-      // (ainda em aprendizado). Campanha "ativa" parada há meses sem gastar não aparece.
+      // 30 days
+      // (still learning). An "active" campaign idle for months is hidden.
       _relevante: gasto > 0 || (c.effective_status === 'ACTIVE' && diasNoAr <= 3) || c.effective_status === 'IN_PROCESS'
     };
   }).filter((c) => c._relevante).map((c) => { delete c._relevante; return c; });
@@ -164,8 +164,8 @@ module.exports = {
     });
     if (!ok.length && avisos.length) throw new Error(avisos[0]);
 
-    // Distribui as campanhas pelos sites: mesma conta e nome batendo com campanhasContendo.
-    // Campanha sem site correspondente vai para o primeiro site que lista a conta.
+    // Assigns campaigns to sites: same account and name matching campaignsContaining.
+    // A campaign with no matching site goes to the first site that lists the account.
     const sites = {};
     registry.sites.forEach((s) => { sites[s.slug] = { ads: { ativo: false, conta: null, campanhas: [] } }; });
     ok.forEach((conta) => {
@@ -179,7 +179,7 @@ module.exports = {
         ads.conta = ads.conta && ads.conta !== conta.nome ? ads.conta + ', ' + conta.nome : conta.nome;
       });
     });
-    const ordem = { ativa: 0, sem_entrega: 1, 'em revisão': 2, pausada: 3 };
+    const ordem = { ativa: 0, sem_entrega: 1, 'in review': 2, pausada: 3 };
     Object.values(sites).forEach((s) => {
       s.ads.campanhas.sort((a, b) => (ordem[a.status] - ordem[b.status]) || (b.gasto - a.gasto));
       s.ads.ativo = s.ads.campanhas.some((c) => c.status === 'ativa');

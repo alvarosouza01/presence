@@ -3,7 +3,7 @@
     { "source": "/", "destination": "/portal/", "permanent": false }
   ],
   "rewrites": [
-    { "source": "/privacidade", "destination": "/privacidade.html" }
+    { "source": "/privacy", "destination": "/privacy.html" }
   ],
   "headers": [
     { "source": "/portal/(.*)", "headers": [

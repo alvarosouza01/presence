@@ -1,66 +1,66 @@
 // ============================================================
-// REGISTRO DO PORTAL · o único arquivo que você edita para plugar
-// seus sites, produtos e redes. Veja README.md e docs/portal.md.
-// Nada aqui é segredo: são só IDs públicos. Chaves e tokens ficam
-// nas variáveis de ambiente da Vercel (veja .env.example).
+// PORTAL CONFIG · the only file you edit to plug in your sites,
+// products and social accounts. See README.md and docs/setup.md.
+// Nothing here is secret: only public IDs. Keys and tokens live in
+// your Vercel environment variables (see .env.example).
 // ============================================================
 
 module.exports = {
-  // Sites que aparecem no overview e no menu, nesta ordem.
+  // Sites shown in the overview and the menu, in this order.
   sites: [
     {
-      slug: 'meusite',                       // usado na URL do portal: #/site/meusite
-      nome: 'meusite.com',
-      dominio: 'www.meusite.com',
-      papel: 'Portfólio e produtos',         // descrição curta que aparece no card
-      // GA4: Admin > Configurações da propriedade (ID numérico) e Fluxo de dados (G-XXXX).
+      slug: 'mysite',                        // used in the portal URL: #/site/mysite
+      name: 'mysite.com',
+      domain: 'www.mysite.com',
+      description: 'Portfolio and products', // short line shown on the card
+      // GA4: Admin > Property settings (numeric ID) and Data streams (G-XXXX).
       ga4: { propertyId: '000000000', measurementId: 'G-XXXXXXXXXX' },
-      // Evento do GA4 que conta como conversão principal (opcional, ou null).
-      conversao: { evento: 'generate_lead', rotulo: 'Inscrições' },
-      // Landing pages (opcional): visitas e conversões do GA4, vendas do Stripe,
-      // anúncios do Meta e, se usar Kit, quantas pessoas estão na lista.
-      landings: [
+      // GA4 event that counts as this site's main conversion (optional, or null).
+      conversion: { event: 'generate_lead', label: 'Sign-ups' },
+      // Landing pages (optional): GA4 visits and conversions, Stripe sales,
+      // Meta ads status and, with Kit, how many people are on the list.
+      landingPages: [
         {
-          nome: 'Lista de espera', caminho: '/lista', paginas: ['/lista'],
-          evento: 'generate_lead', rotulo: 'Inscrições',
-          campanhas: ['lista'],              // trecho do nome das campanhas no Meta
-          produto: null,                     // nome de um produto abaixo, se a página vende algo
-          kit: 'lista de espera'             // trecho do nome do formulário ou tag no Kit
+          name: 'Waitlist', path: '/waitlist', pages: ['/waitlist'],
+          event: 'generate_lead', label: 'Sign-ups',
+          campaigns: ['waitlist'],           // part of the Meta campaign names
+          product: null,                     // a product name below, if the page sells something
+          kitList: 'waitlist'                // part of the Kit form or tag name
         }
       ],
-      // Contas de anúncio do Meta (só números, sem "act_") e trechos do nome das campanhas deste site.
-      meta: { contas: ['000000000000000'], campanhasContendo: ['meusite'] }
+      // Meta ad accounts (numbers only, no "act_") and parts of this site's campaign names.
+      meta: { adAccounts: ['000000000000000'], campaignsContaining: ['mysite'] }
     },
     {
       slug: 'app',
-      nome: 'meuapp.com',
-      dominio: 'meuapp.com',
-      papel: 'Landing do app',
+      name: 'myapp.com',
+      domain: 'myapp.com',
+      description: 'App landing page',
       ga4: { propertyId: '000000000', measurementId: 'G-XXXXXXXXXX' },
-      conversao: null,
+      conversion: null,
       meta: null
     }
   ],
 
-  // Produtos vendidos no Stripe. Cada venda é ligada a um produto pelo Payment Link
-  // usado no checkout (Stripe > Payment Links, o ID começa com plink_).
-  // viaAnuncios: true marca produtos vendidos com anúncio pago: a receita deles entra
-  // no retorno dos anúncios (ROI). O resto conta como receita orgânica.
-  produtos: [
-    { nome: 'Ebook', site: 'meusite', viaAnuncios: true, paymentLinks: ['plink_XXXXXXXXXXXXXXXX'] },
-    { nome: 'Assinatura', site: 'meusite', paymentLinks: [] }
+  // Products sold through Stripe. Each sale is matched to a product by the Payment Link
+  // used at checkout (Stripe > Payment Links, the ID starts with plink_).
+  // fromAds: true marks products you sell with paid ads: their revenue counts toward
+  // return on ad spend. Everything else counts as organic revenue.
+  products: [
+    { name: 'Ebook', site: 'mysite', fromAds: true, paymentLinks: ['plink_XXXXXXXXXXXXXXXX'] },
+    { name: 'Subscription', site: 'mysite', paymentLinks: [] }
   ],
 
-  // Vendas que não batem com nenhum Payment Link entram aqui.
-  produtoPadrao: { nome: 'Outros', site: null },
+  // Sales that match no Payment Link land here.
+  defaultProduct: { name: 'Other', site: null },
 
-  // Redes sociais da seção "Redes".
-  redes: {
-    // Instagram: ID da conta profissional (Business Manager > Contas do Instagram).
+  // Social section.
+  social: {
+    // Instagram: professional account ID (Business Manager > Instagram accounts).
     instagram: [
-      // { id: '17800000000000000', usuario: '@seuperfil' }
+      // { id: '17800000000000000', username: '@yourprofile' }
     ],
-    // Newsletter no Kit: conta todos os inscritos ativos (precisa de KIT_API_KEY). Use null para esconder.
-    newsletter: { nome: 'Newsletter', url: null }
+    // Kit newsletter: counts every active subscriber (needs KIT_API_KEY). Use null to hide it.
+    newsletter: { name: 'Newsletter', url: null }
   }
 };

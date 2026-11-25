@@ -1,7 +1,7 @@
-// Fonte: YouTube (seu canal).
-// Usa o mesmo cliente OAuth do login (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET) e um
-// refresh token do dono do canal, gerado uma vez em /api/portal/auth/youtube e guardado
-// em YOUTUBE_REFRESH_TOKEN. Escopos: youtube.readonly e yt-analytics.readonly.
+// Source: YouTube (your channel).
+// Uses the same OAuth client as the login (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET) and a
+// refresh token from the channel owner, generated once at /api/portal/auth/youtube and stored
+// in YOUTUBE_REFRESH_TOKEN. Scopes: youtube.readonly and yt-analytics.readonly.
 
 const { ultimosDias } = require('../util');
 
@@ -45,7 +45,7 @@ module.exports = {
     if (!canal) throw new Error('YouTube: nenhum canal nesta conta Google');
     const st = canal.statistics || {};
 
-    // Ganhos, perdidos e views por dia (o Analytics costuma ter 2 a 3 dias de atraso).
+    // Gained, lost and views per day (Analytics usually lags 2 to 3 days).
     const serie = { ganhos: dias.map(() => 0), perdidos: dias.map(() => 0), views: dias.map(() => 0), minutos: dias.map(() => 0) };
     let analyticsOk = true;
     try {
@@ -61,7 +61,7 @@ module.exports = {
       });
     } catch (e) { analyticsOk = false; }
 
-    // Últimos vídeos publicados, com estatísticas.
+    // Latest uploads, with stats.
     let videos = [];
     const uploads = canal.contentDetails && canal.contentDetails.relatedPlaylists && canal.contentDetails.relatedPlaylists.uploads;
     if (uploads) {

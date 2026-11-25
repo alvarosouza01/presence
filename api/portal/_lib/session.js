@@ -1,15 +1,15 @@
-// Sessão do portal: cookie assinado com HMAC, sem banco de dados.
-// O cookie guarda só { email, exp } e não pode ser lido por JavaScript (HttpOnly).
-// Variáveis de ambiente: PORTAL_SESSION_SECRET, PORTAL_ALLOWED_EMAIL.
+// Portal session: HMAC-signed cookie, no database.
+// The cookie stores only { email, exp } and cannot be read by JavaScript (HttpOnly).
+// Env: PORTAL_SESSION_SECRET, PORTAL_ALLOWED_EMAIL.
 
 const crypto = require('crypto');
 
 const COOKIE = 'portal_session';
-const MAX_AGE = 60 * 60 * 24 * 30; // 30 dias
+const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 function secret() {
   const s = process.env.PORTAL_SESSION_SECRET;
-  if (!s || s.length < 32) throw new Error('PORTAL_SESSION_SECRET ausente ou curta (mínimo 32 caracteres)');
+  if (!s || s.length < 32) throw new Error('PORTAL_SESSION_SECRET missing or too short (32 characters minimum)');
   return s;
 }
 
@@ -72,7 +72,7 @@ function endSession(res) {
   appendCookie(res, cookie(COOKIE, '', { maxAge: 0 }));
 }
 
-// Usado nas funções protegidas. Devolve a sessão ou responde 401 e devolve null.
+// Used by protected functions. Returns the session, or answers 401 and returns null.
 function requireSession(req, res) {
   const s = getSession(req);
   if (s) return s;
@@ -83,7 +83,7 @@ function requireSession(req, res) {
   return null;
 }
 
-// URL pública do site, para montar o redirect do Google.
+// Public site URL, used to build the Google redirect.
 function baseUrl(req) {
   if (process.env.PORTAL_BASE_URL) return process.env.PORTAL_BASE_URL.replace(/\/$/, '');
   const host = req.headers['x-forwarded-host'] || req.headers.host;
