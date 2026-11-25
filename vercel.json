@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    { "source": "/", "destination": "/portal/", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/privacidade", "destination": "/privacidade.html" }
+  ],
+  "headers": [
+    { "source": "/portal/(.*)", "headers": [
+      { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+      { "key": "Cache-Control", "value": "no-store" }
+    ] }
+  ]
+}

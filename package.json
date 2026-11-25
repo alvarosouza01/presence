@@ -1,0 +1,9 @@
+{
+  "name": "minha-presenca-online",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Um portal privado com seus sites, vendas, anúncios e redes num lugar só. Roda na Vercel, sem dependências.",
+  "scripts": { "dev": "vercel dev" },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}
