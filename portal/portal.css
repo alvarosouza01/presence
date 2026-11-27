@@ -501,3 +501,7 @@ tr.drop > td { padding: 0; background: var(--paper); }
 
 .plist .who { font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lcard, .scard { min-width: 0; overflow: hidden; }
+
+/* Product filter in Recent activity */
+.movfiltro { font: inherit; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink, #171717);
+  background: transparent; border: 1px solid rgba(0,0,0,.18); border-radius: 999px; padding: .35rem .8rem; cursor: pointer; }

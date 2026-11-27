@@ -51,6 +51,24 @@ module.exports = {
     { name: 'Subscription', site: 'mysite', paymentLinks: [] }
   ],
 
+  // Your own test purchases: charges made with these e-mails stay out of the dashboard.
+  testEmails: ['you@example.com'],
+
+  // Fix where a sale came from by hand, by Stripe payment_intent, as source__medium__campaign__content.
+  // Useful when a buyer clicked your newsletter but paid from another device.
+  manualOrigins: {
+    // 'pi_123': 'newsletter__email__launch__-'
+  },
+
+  // Money that left your bank account to pay Meta (payments or prepaid balance). Meta does not
+  // expose billing through the API, so keep this list by hand. since = first payment date.
+  adPayments: {
+    since: null, // '2026-11-01'
+    payments: [
+      // { date: '2026-11-01', amount: 250, note: 'Card' }
+    ]
+  },
+
   // Sales that match no Payment Link land here.
   defaultProduct: { name: 'Other', site: null },
 

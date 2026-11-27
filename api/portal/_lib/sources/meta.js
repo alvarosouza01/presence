@@ -3,7 +3,7 @@
 // your Business Manager, with ads_read only on the accounts
 // listed in sites.js (meta.adAccounts). Optional: META_API_VERSION (default below).
 
-const { ultimosDias } = require('../util');
+const { ultimosDias, diaLocal } = require('../util');
 
 const VERSAO = () => process.env.META_API_VERSION || 'v23.0';
 const BASE = () => 'https://graph.facebook.com/' + VERSAO() + '/';
@@ -187,9 +187,22 @@ module.exports = {
     });
     Object.keys(sites).forEach((k) => { if (!sites[k].ads.campanhas.length) delete sites[k]; });
 
+    // Spend since your first payment to Meta, for the "Invested in ads" block.
+    let investimento = null;
+    const inv = registry.investimentoMeta;
+    if (inv && inv.desde) {
+      const ate = diaLocal(hoje.getTime());
+      const gs = await Promise.allSettled(contas.map((c) => get('act_' + c + '/insights', {
+        fields: 'spend', time_range: JSON.stringify({ since: inv.desde, until: ate })
+      })));
+      const gastoDesde = gs.reduce((a, r) => a + (r.status === 'fulfilled' ? num(((r.value.data || [])[0] || {}).spend) : 0), 0);
+      const pagos = (inv.pagamentos || []).reduce((a, p) => a + (Number(p.valor) || 0), 0);
+      investimento = { desde: inv.desde, investido: r2(pagos), gasto: r2(gastoDesde), saldo: r2(pagos - gastoDesde), pagamentos: inv.pagamentos || [] };
+    }
+
     return {
       sites,
-      faturamento: { gastoAds30d: r2(ok.reduce((a, c) => a + c.gasto30d, 0)) },
+      faturamento: { gastoAds30d: r2(ok.reduce((a, c) => a + c.gasto30d, 0)), investimentoMeta: investimento },
       avisos
     };
   }

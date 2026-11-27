@@ -30,19 +30,23 @@
       diario: escala(serie(30, 60, 70, 3), 1106.6), // last 30 days (sum = total by product)
       porProduto: [
         { nome: "Mentoring (subscription)", valor: 400, qtd: 2 },
-        { nome: "Ebook", valor: 159.6, qtd: 4 },
+        { nome: "Ebook", valor: 159.6, qtd: 4, viaAnuncios: true },
         { nome: "Mentoring", valor: 398, qtd: 2 },
         { nome: "Portfolio review", valor: 149, qtd: 1 }
       ],
+      hoje: { valor: 97, qtd: 1 },
       recentes: [
-        { data: "23 Nov", produto: "Ebook", valor: 39.9, status: "refunded" },
-        { data: "22 Nov", produto: "Mentoring", valor: 199, status: "paid" },
-        { data: "20 Nov", produto: "Ebook", valor: 39.9, status: "paid" },
-        { data: "18 Nov", produto: "Portfolio review", valor: 149, status: "paid" },
-        { data: "16 Nov", produto: "Mentoring (subscription)", valor: 200, status: "paid" },
-        { data: "15 Nov", produto: "Mentoring (subscription)", valor: 200, status: "failed" },
-        { data: "11 Nov", produto: "Ebook", valor: 39.9, status: "paid" }
+        { data: "Today", hoje: true, produto: "Mentoring", valor: 97, status: "paid", origem: { tipo: "ads", rotulo: "Ad · meta", campanha: "EBOOK---Sales---Test-1" } },
+        { data: "23 Nov", produto: "Ebook", valor: 39.9, status: "refunded", origem: { tipo: "organico", rotulo: "Organic · newsletter", campanha: "launch" } },
+        { data: "22 Nov", produto: "Mentoring", valor: 199, status: "paid", origem: { tipo: "organico", rotulo: "Organic · instagram", campanha: null } },
+        { data: "20 Nov", produto: "Ebook", valor: 39.9, status: "paid", origem: { tipo: "ads", rotulo: "Ad · meta", campanha: "EBOOK---Sales---Test-1" } },
+        { data: "18 Nov", produto: "Portfolio review", valor: 149, status: "paid", origem: { tipo: "direto", rotulo: "Direct" } },
+        { data: "16 Nov", produto: "Mentoring (subscription)", valor: 200, status: "paid", origem: { tipo: "recorrente", rotulo: "Recurring" } },
+        { data: "15 Nov", produto: "Mentoring (subscription)", valor: 200, status: "failed", origem: { tipo: "recorrente", rotulo: "Recurring" } },
+        { data: "11 Nov", produto: "Ebook", valor: 39.9, status: "paid", origem: { tipo: "sem", rotulo: "Not tracked" } }
       ],
+      investimentoMeta: { desde: "2026-11-01", investido: 400, gasto: 312.4, saldo: 87.6, pagamentos: [
+        { data: "2026-11-01", valor: 250, nota: "Card" }, { data: "2026-11-18", valor: 150, nota: "Card" }] },
       aCaminho: 419.2,
       falhas30d: 3,
       reembolsos30d: 39.9,

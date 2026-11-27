@@ -20,6 +20,9 @@ module.exports = function config(c) {
   return {
     sites: (c.sites || []).map(site),
     produtos: (c.products || []).map((p) => ({ nome: p.name, site: p.site, viaAnuncios: Boolean(p.fromAds), paymentLinks: p.paymentLinks || [] })),
+    emailsDeTeste: c.testEmails || [],
+    origemManual: c.manualOrigins || {},
+    investimentoMeta: c.adPayments && c.adPayments.since ? { desde: c.adPayments.since, pagamentos: (c.adPayments.payments || []).map((p) => ({ data: p.date || null, valor: p.amount, nota: p.note || '' })) } : null,
     produtoPadrao: { nome: (c.defaultProduct && c.defaultProduct.name) || 'Other', site: (c.defaultProduct && c.defaultProduct.site) || null },
     redes: {
       instagram: (social.instagram || []).map((i) => ({ id: i.id, usuario: i.username })),

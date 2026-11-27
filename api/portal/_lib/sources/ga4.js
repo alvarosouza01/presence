@@ -117,7 +117,7 @@ async function coletarSite(token, site, dias) {
   const landings = site.landings || [];
   if (landings.length) {
     requests2.push({ // 30 days
-      dateRanges: [{ startDate: '30daysAgo', endDate: 'yesterday' }],
+      dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
       dimensions: [{ name: 'pagePath' }, { name: 'eventName' }],
       metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }],
       dimensionFilter: { filter: { fieldName: 'eventName', inListFilter: { values: ['page_view'].concat([...new Set(landings.map((l) => l.evento))]) } } },

@@ -15,8 +15,10 @@ Made by [alvarosouza.com](https://www.alvarosouza.com).
 - **Overview:** every site with yesterday's visits split into organic and ads, plus organic revenue, revenue from ads, ad spend and return on ad spend
 - **Site pages:** top pages, traffic sources, countries, organic vs ads per day, and the pages getting ad traffic grouped by campaign
 - **Landing pages:** visits, conversions, conversion rate, sales and whether an ad is running, plus who joined the list in Kit
-- **Revenue:** by day, week or month, compared with the previous 30 days, by product, with refunds, failed charges and the balance pending in Stripe, plus app subscriptions from RevenueCat
+- **Revenue:** today so far, by day, week or month, compared with the previous 30 days, by product, with refunds, failed charges and the balance pending in Stripe, plus app subscriptions from RevenueCat
 - **Campaigns:** Meta Ads spend, results, cost per result and creatives, with campaigns that stopped delivering flagged
+- **Return per campaign:** sales, spend, revenue and ROI per campaign, plus what you actually paid Meta and the balance left
+- **Sale sources:** every sale tagged as ad, organic, direct or recurring from your UTMs, with a product filter. See [docs/tracking.md](docs/tracking.md)
 - **Social:** YouTube subscribers and latest videos, Instagram followers, reach and new followers per post, newsletter subscribers and open rates
 - **Private:** Google sign-in for the e-mails you allow, signed session cookie, read-only keys, hidden from search engines
 - **Pluggable:** every source is optional and independent, and adding a new one is a single file

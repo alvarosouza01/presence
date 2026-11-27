@@ -378,17 +378,24 @@
     var html = head("Revenue", "Everything that came in through Stripe, and what it cost to bring in.", "Stripe<br>Net of refunds");
     html += '<div class="ledger section reveal"><div>' +
       '<div class="mono muted">Last 30 days</div><div class="big-figure">' + brl0.format(Math.round(total)) + "</div>" +
+      (f.hoje ? '<div class="mono" style="margin:.2rem 0 .4rem">Today so far: <strong>' + brl.format(f.hoje.valor) + "</strong> · " + nf.format(f.hoje.qtd) + (f.hoje.qtd === 1 ? " sale" : " sales") + "</div>" : "") +
       (ant != null ? '<div style="margin-top:.4rem">' + cmp(total, ant) + ' <span class="mono muted">before: ' + brl0.format(ant) + "</span></div>" : "") +
       '<div style="margin-top:1.6rem">' + receitaWidget("rec-fat", 150) + "</div></div>" +
       "<div><div class=\"mono muted\" style=\"margin-bottom:.4rem\">By product, 30 days</div>" + barList(f.porProduto.map(function (p) { return [p.nome + " · " + p.qtd + "×", p.valor]; }), brl.format) + "</div></div>";
 
-    html += '<div class="kpis">' +
+    var roiF = f.gastoAds30d > 0 && f.receitaAds30d != null ? f.receitaAds30d / f.gastoAds30d : null;
+    var roiTxt = roiF == null ? "–" : roiF.toFixed(1) + "×";
+    var roiNota = roiF == null ? "no ad spend" : (roiF >= 1 ? "profit of " + brl0.format(f.receitaAds30d - f.gastoAds30d) : "loss of " + brl0.format(f.gastoAds30d - f.receitaAds30d));
+    html += '<div class="kpis k5">' +
       kpi("Organic revenue", f.receitaOrganica30d != null ? brl0.format(f.receitaOrganica30d) : "–", cmp(f.receitaOrganica30d || 0, orgAnt)) +
       kpi("Revenue from ads", f.receitaAds30d != null ? brl0.format(f.receitaAds30d) : "–", cmp(f.receitaAds30d || 0, f.receitaAdsAnterior30d)) +
+      kpi("ROI", roiTxt, '<span class="delta ' + (roiF == null ? "flat" : roiF >= 1 ? "up" : "down") + '">' + roiNota + "</span>") +
       kpi("Ad spend", f.gastoAds30d != null ? brl.format(f.gastoAds30d) : "–", '<span class="delta flat">Meta, 30 days</span>') +
       kpi("Pending in Stripe", brl.format(f.aCaminho), '<span class="delta flat">paid sales not yet available' + (f.disponivel != null ? ", available " + brl.format(f.disponivel) : "") + "</span>") +
       "</div>";
     html += '<p class="mono muted" style="margin:-2rem 0 3rem">Refunds 30d: ' + brl.format(f.reembolsos30d) + " · Failed charges: " + nf.format(f.falhas30d) + "</p>";
+    html += roiCampanhas(f);
+    html += investidoMeta(f);
 
     var outras = Object.keys(f.outrasMoedas || {});
     if (outras.length) html += '<p class="mono muted" style="margin:-2rem 0 3rem">Not in the total: ' + outras.map(function (m) {
@@ -402,15 +409,100 @@
         kpi("Active trials", a.trials != null ? nf.format(a.trials) : "–", "") +
         kpi("New customers", a.novos28d != null ? nf.format(a.novos28d) : "–", '<span class="delta flat">last 28 days</span>') + "</div>");
     });
+    var CLS_ORIG = { ads: "bad", organico: "ok", direto: "", recorrente: "", sem: "" };
     var rows = f.recentes.map(function (r) {
       var cls = r.status === "paid" ? "ok" : (r.status === "failed" ? "bad" : "");
       var vf = r.moeda && r.moeda !== (D.faturamento.moeda || "").toLowerCase() ? new Intl.NumberFormat(LOCALE, { style: "currency", currency: r.moeda.toUpperCase() }).format(r.valor) : brl.format(r.valor);
-      var dt = /^\d{4}-\d{2}-\d{2}$/.test(r.data) ? dataCurta(r.data) : r.data;
-      return '<tr><td class="mono muted">' + esc(dt) + "</td><td>" + esc(r.produto) + '</td><td class="r numcell">' + vf +
-        '</td><td class="r"><span class="pill ' + cls + '">' + esc(r.status) + "</span></td></tr>";
+      var dt = r.hoje ? "Today" : (/^\d{4}-\d{2}-\d{2}$/.test(r.data) ? dataCurta(r.data) : r.data);
+      var o = r.origem || { tipo: "sem", rotulo: "Not tracked" };
+      return '<tr data-prod="' + esc(r.produto) + '"><td class="mono muted">' + esc(dt) + "</td><td>" + esc(r.produto) +
+        '</td><td><span class="pill ' + (CLS_ORIG[o.tipo] || "") + '">' + esc(o.rotulo) + "</span>" + (o.campanha ? '<small class="mono muted" style="display:block;margin-top:.3rem">' + esc(o.campanha) + "</small>" : "") +
+        '</td><td class="r numcell">' + vf + '</td><td class="r"><span class="pill ' + cls + '">' + esc(r.status) + "</span></td></tr>";
     }).join("");
-    html += section("01", "Recent activity", "", '<table class="table"><thead><tr><th>Date</th><th>Product</th><th class="r">Amount</th><th class="r">Status</th></tr></thead><tbody>' + rows + "</tbody></table>");
+    var prods = [];
+    f.recentes.forEach(function (r) { if (prods.indexOf(r.produto) < 0) prods.push(r.produto); });
+    var filtro = '<select class="movfiltro" onchange="window.__filtraMov(this.value)"><option value="">All products</option>' +
+      prods.map(function (p) { return "<option>" + esc(p) + "</option>"; }).join("") + "</select>";
+    html += section("01", "Recent activity", filtro, '<table class="table" id="movs"><thead><tr><th>Date</th><th>Product</th><th>Source</th><th class="r">Amount</th><th class="r">Status</th></tr></thead><tbody>' + rows + "</tbody></table>");
     return html;
+  }
+
+  window.__filtraMov = function (v) {
+    document.querySelectorAll("#movs tbody tr").forEach(function (tr) { tr.style.display = !v || tr.getAttribute("data-prod") === v ? "" : "none"; });
+  };
+
+  // ROI per campaign. Tracked revenue: sales whose origin carries the campaign name.
+  // Products not flagged fromAds only count sales that came from ads (ad sales without a campaign
+  // name are split across the product's campaigns by spend). Untracked products flagged fromAds:
+  // the product's revenue is split across its campaigns by spend (estimated).
+  function roiCampanhas(f) {
+    var chave = function (t) { return String(t || "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 30); };
+    var linhas = [];
+    D.sites.forEach(function (s) {
+      (s.ads.campanhas || []).forEach(function (c) {
+        if (!(c.gasto > 0) && c.status !== "ativa" && c.status !== "sem_entrega" && c.status !== "in review") return;
+        var n = c.nome.toLowerCase();
+        var l = (s.landings || []).find(function (x) { return (x.campanhas || []).some(function (t) { return n.indexOf(String(t).toLowerCase()) >= 0; }); });
+        linhas.push({ nome: c.nome, gasto: c.gasto, produto: l && l.produto ? l.produto : null, k: chave(c.nome) });
+      });
+    });
+    if (!linhas.length) return "";
+    linhas.forEach(function (x) {
+      var vendas = f.recentes.filter(function (r) { return r.status === "paid" && r.origem && r.origem.tipo === "ads" && r.origem.campanha && x.k && chave(r.origem.campanha).indexOf(x.k.slice(0, 20)) === 0; });
+      if (vendas.length) { x.receita = vendas.reduce(function (a, r) { return a + r.valor; }, 0); x.base = "tracked"; x.qtd = vendas.length; }
+    });
+    linhas.forEach(function (x) {
+      if (x.base || !x.produto) return;
+      var prodX = (f.porProduto || []).find(function (p) { return p.nome === x.produto; });
+      if (prodX && prodX.viaAnuncios) return;
+      var usadas = linhas.filter(function (y) { return y.base === "tracked"; }).map(function (y) { return y.k.slice(0, 20); });
+      var soltas = f.recentes.filter(function (r) {
+        return r.status === "paid" && r.produto === x.produto && r.origem && r.origem.tipo === "ads" &&
+          !(r.origem.campanha && usadas.some(function (u) { return u && chave(r.origem.campanha).indexOf(u) === 0; }));
+      });
+      var irmasA = linhas.filter(function (y) { return !y.base && y.produto === x.produto; });
+      var gastoA = irmasA.reduce(function (a, y) { return a + y.gasto; }, 0);
+      var total = soltas.reduce(function (a, r) { return a + r.valor; }, 0);
+      irmasA.forEach(function (y) { var parte = gastoA > 0 ? y.gasto / gastoA : 1 / irmasA.length; y.receita = total * parte; y.qtd = soltas.length * parte; y.aprox = irmasA.length > 1 && soltas.length > 0; y.base = "tracked"; });
+    });
+    linhas.forEach(function (x) {
+      if (x.base || !x.produto) return;
+      var irmas = linhas.filter(function (y) { return !y.base && y.produto === x.produto; });
+      var gastoP = irmas.reduce(function (a, y) { return a + y.gasto; }, 0);
+      var prod = (f.porProduto || []).find(function (p) { return p.nome === x.produto; });
+      // Revenue already assigned to tracked campaigns of the same product is not counted twice.
+      var jaR = 0, jaQ = 0;
+      linhas.forEach(function (y) { if (y.base === "tracked" && y.produto === x.produto) { jaR += y.receita || 0; jaQ += y.qtd || 0; } });
+      var restoR = prod ? Math.max(0, prod.valor - jaR) : 0, restoQ = prod ? Math.max(0, prod.qtd - jaQ) : 0;
+      x.receita = gastoP > 0 ? restoR * x.gasto / gastoP : 0;
+      x.qtd = gastoP > 0 ? restoQ * x.gasto / gastoP : 0; x.aprox = irmas.length > 1;
+      x.base = irmas.length > 1 ? "estimated" : "by product";
+    });
+    var rows = linhas.sort(function (a, b) { return b.gasto - a.gasto; }).map(function (x) {
+      var r = x.receita || 0, roi = x.gasto > 0 ? r / x.gasto : null;
+      return "<tr><td>" + esc(x.nome) + '<small class="mono muted" style="display:block;margin-top:.3rem">' + esc(x.produto || "no product linked") + " · " + esc(x.base || "no revenue") + "</small></td>" +
+        '<td class="r numcell">' + (x.aprox ? "~" : "") + nf.format(Math.round(x.qtd || 0)) + '</td><td class="r numcell">' + brl.format(x.gasto) + '</td><td class="r numcell">' + brl.format(r) +
+        '</td><td class="r">' + (roi == null ? '<span class="delta flat">no spend yet</span>' : '<span class="delta ' + (roi >= 1 ? "up" : "down") + '">' + roi.toFixed(1) + "×</span>") + "</td></tr>";
+    }).join("");
+    return section("ROI", "Return per campaign", "30 days", '<table class="table"><thead><tr><th>Campaign</th><th class="r">Sales</th><th class="r">Spend</th><th class="r">Revenue</th><th class="r">ROI</th></tr></thead><tbody>' + rows + "</tbody></table>");
+  }
+
+  // Invested in ads: what left your bank account (list in sites.js), what campaigns spent, what is left.
+  function investidoMeta(f) {
+    var m = f.investimentoMeta;
+    if (!m) return "";
+    var roiB = m.investido > 0 && f.receitaAds30d != null ? f.receitaAds30d / m.investido : null;
+    var lista = m.pagamentos.map(function (p) {
+      return '<li><div class="plist-main"><span class="who">' + brl.format(p.valor) + "</span>" + (p.nota ? "<small>" + esc(p.nota) + "</small>" : "") +
+        '</div><div class="plist-num"><small>' + (p.data ? dataCurta(p.data) : "no date") + "</small></div></li>";
+    }).join("");
+    return section("$", "Invested in Meta ads", "since " + dataCurta(m.desde),
+      '<div class="kpis">' +
+      kpi("Invested", brl.format(m.investido), '<span class="delta flat">left your account, ' + nf.format(m.pagamentos.length) + " payment(s)</span>") +
+      kpi("Spent by campaigns", brl.format(m.gasto), '<span class="delta flat">before taxes, since ' + dataCurta(m.desde) + "</span>") +
+      kpi("Balance at Meta", brl.format(m.saldo), '<span class="delta flat">approximate, still to spend</span>') +
+      kpi("Out-of-pocket ROI", roiB == null ? "–" : roiB.toFixed(2) + "×", '<span class="delta ' + (roiB == null ? "flat" : roiB >= 1 ? "up" : "down") + '">revenue from ads ÷ invested</span>') +
+      "</div>" + (lista ? '<ul class="plist" style="margin-top:1rem">' + lista + "</ul>" : ""));
   }
 
   function kitHtml(k) {
